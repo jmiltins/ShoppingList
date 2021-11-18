@@ -10,15 +10,42 @@ import CoreData
 
 class ShoppingTableViewController: UITableViewController {
     
-    var shopping = [String]()
+    //var shopping = [String]()
+    var shopping = [Shopping]()
+    
+    var managedObjectContext: NSManagedObjectContext?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        managedObjectContext = appDelegate.persistentContainer.viewContext
+        
+        // loadData()
+        
+        
     }
-    // loadData()
+    func loadData(){
+        let request: NSFetchRequest<Shopping> = Shopping.fetchRequest()
+        do{
+            let result = try managedObjectContext?.fetch(request)
+            shopping = result!
+            tableView.reloadData()
+            
+        }catch{
+            fatalError("Error in loading core data item")
+        }
+    }
     
-    //saveData()
+    func saveData(){
+        do{
+            try managedObjectContext?.save()
+            
+            
+        }catch{
+            fatalError("Error in saving in core data item")
+        }
+        loadData()
+    }
     
     //deleteAllData()
     
@@ -38,9 +65,14 @@ class ShoppingTableViewController: UITableViewController {
         //addActionButton
         let addActionButton = UIAlertAction(title: "Add", style: .default) { action in
             let textField = allertController.textFields?.first
+            let entity = NSEntityDescription.entity(forEntityName: "Shopping", in: self.managedObjectContext!)
+            let shop = NSManagedObject(entity: entity!, insertInto: self.managedObjectContext)
+            
+            shop.setValue(textField?.text, forKey: "item")
             // append in array
-            self.shopping.append(textField!.text!)
+        //    self.shopping.append(textField!.text!)
             //reload data after adding
+            self.saveData()
             self.tableView.reloadData()
             
         }
@@ -71,7 +103,9 @@ class ShoppingTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
 
         // Configure the cell...
-        cell.textLabel?.text = shopping[indexPath.row]
+        //cell.textLabel?.text = shopping[indexPath.row]
+        let shop = shopping[indexPath.row]
+        cell.textLabel?.text = shop.value(forKey: "item") as? String
         return cell
     }
 
