@@ -22,8 +22,8 @@ class ShoppingTableViewController: UITableViewController {
         
         // loadData()
         
-        
     }
+    
     func loadData(){
         let request: NSFetchRequest<Shopping> = Shopping.fetchRequest()
         do{
@@ -47,7 +47,16 @@ class ShoppingTableViewController: UITableViewController {
         loadData()
     }
     
-    //deleteAllData()
+    func deleteAllData(){
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "Shopping")
+        let delete: NSBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: request)
+        do{
+            try managedObjectContext?.execute(delete)
+            saveData()
+            }catch let err{
+                print(err.localizedDescription)
+            }
+    }
     
     
     @IBAction func addNewItem(_ sender: Any) {
@@ -87,6 +96,17 @@ class ShoppingTableViewController: UITableViewController {
         
     }
     @IBAction func deleteAllItems(_ sender: Any) {
+        let allertController = UIAlertController(title: "Delete all Shopping items?", message: "Do you want to delete them all?", preferredStyle: .actionSheet)
+        let addActionButton = UIAlertAction(title: "Delete", style: .destructive) { action in
+            self.deleteAllData()
+        }
+        //cancel Button
+        let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        //add two buttons
+        allertController.addAction(addActionButton)
+        allertController.addAction(cancelButton)
+        // present buttons
+        present(allertController, animated: true, completion: nil)
     }
     
     
@@ -106,6 +126,7 @@ class ShoppingTableViewController: UITableViewController {
         //cell.textLabel?.text = shopping[indexPath.row]
         let shop = shopping[indexPath.row]
         cell.textLabel?.text = shop.value(forKey: "item") as? String
+        //cell.detailTextLabel?.text = "Count: "
         cell.accessoryType = shop.completed ? .checkmark : .none
         return cell
     }
