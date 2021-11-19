@@ -16,11 +16,12 @@ class ShoppingTableViewController: UITableViewController {
     var managedObjectContext: NSManagedObjectContext?
     
     override func viewDidLoad() {
+        
         super.viewDidLoad()
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         managedObjectContext = appDelegate.persistentContainer.viewContext
-        
-        // loadData()
+        // on start load saved data
+        loadData()
         
     }
     
@@ -53,31 +54,40 @@ class ShoppingTableViewController: UITableViewController {
         do{
             try managedObjectContext?.execute(delete)
             saveData()
-            }catch let err{
-                print(err.localizedDescription)
-            }
+        }catch let err{
+            print(err.localizedDescription)
+        }
     }
     
     
     @IBAction func addNewItem(_ sender: Any) {
         
         let allertController = UIAlertController(title: "Shopping Item", message: "What do you want to add?\nHow many? ", preferredStyle: .alert)
+        //allertController.addTextField { textField in
+        //    print("textFieldItem: ", textField)// default
         allertController.addTextField { textField in
-            print("textFieldItem: ", textField)
+            textField.placeholder = "item"
+       
         }
         //allertController.
-        allertController.addTextField { textField2 in
-            print("textFieldCount: ", textField2)
-            //+add amount
+        //+add amount
+        allertController.addTextField { (textField) in
+            textField.placeholder = "count"
+           
         }
+      
         // buttons
+        
         //addActionButton
         let addActionButton = UIAlertAction(title: "Add", style: .default) { action in
             let textField = allertController.textFields?.first
+            
             let entity = NSEntityDescription.entity(forEntityName: "Shopping", in: self.managedObjectContext!)
             let shop = NSManagedObject(entity: entity!, insertInto: self.managedObjectContext)
             
             shop.setValue(textField?.text, forKey: "item")
+            shop.setValue(textField?.text, forKey: "count")
+            
             // append in array
             //    self.shopping.append(textField!.text!)
             //reload data after adding
@@ -124,9 +134,11 @@ class ShoppingTableViewController: UITableViewController {
         
         // Configure the cell...
         //cell.textLabel?.text = shopping[indexPath.row]
-        let shop = shopping[indexPath.row]
+        let shop = shopping[indexPath.row] //self.tableView.reloadData()
         cell.textLabel?.text = shop.value(forKey: "item") as? String
+        cell.detailTextLabel?.text = shop.value(forKey: "count") as? String
         //cell.detailTextLabel?.text = "Count: "
+        //show checkmark
         cell.accessoryType = shop.completed ? .checkmark : .none
         return cell
     }
@@ -144,6 +156,7 @@ class ShoppingTableViewController: UITableViewController {
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
+            //access data
             managedObjectContext?.delete(shopping[indexPath.row])
         }
         saveData()
